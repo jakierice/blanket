@@ -5,7 +5,6 @@ import * as TE from "fp-ts/lib/TaskEither";
 import * as RD from "@devexperts/remote-data-ts";
 import { pipe } from "fp-ts/lib/function";
 import logo from "./logo.svg";
-import {setTimeout} from "timers";
 
 function fetchWorkingFund() {
   return TE.tryCatch(
@@ -21,10 +20,7 @@ function fetchWorkingFund() {
 
 export const AccountsPage = () => {
   const [accounts, setAccounts] = React.useState<
-    RD.RemoteData<
-      string,
-      { data: { name: string; amount: string; goal: string } }
-    >
+    RD.RemoteData<string, { name: string; amount: string; goal: string }>
   >(RD.initial);
   React.useEffect(() => {
     const loadWorkingFund = pipe(
@@ -49,7 +45,7 @@ export const AccountsPage = () => {
           <pre>{e}</pre>
         </>
       ),
-      ({ data: account }) => (
+      (account) => (
         <>
           <h2>{account.name}</h2>
           <span>Current balance: {account.amount}</span>
