@@ -15,3 +15,8 @@ export function getConfig() {
     return functions.config().env;
   }
 }
+
+export const {
+  sheet: { sheet_id: SHEET_ID, spreadsheet_id: SPREADSHEET_ID },
+  blanket_service_account: SERVICE_ACCOUNT_CREDS,
+} = getConfig();
