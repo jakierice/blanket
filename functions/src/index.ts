@@ -25,18 +25,19 @@ const creds = {
   private_key: private_key,
 };
 
-function handleCorsRequest(te: TE.TaskEither<unknown, unknown>) {
-  return function (req: functions.https.Request, res: functions.Response) {
-    const task = pipe(
-      te,
-      TE.fold(
-        (e) => T.fromIO(() => res.status(500).send(e)),
-        (d) => T.fromIO(() => res.send(d))
-      )
-    );
-    corsRequest(req, res, task);
-  };
-}
+const handleCorsRequest = (handler: TE.TaskEither<unknown, unknown>) => (
+  req: functions.https.Request,
+  res: functions.Response
+) => {
+  const handlerTask = pipe(
+    handler,
+    TE.fold(
+      (e) => T.fromIO(() => res.status(500).send(e)),
+      (d) => T.fromIO(() => res.send(d))
+    )
+  );
+  corsRequest(req, res, handlerTask);
+};
 
 const makeNewSpreadsheetInstance = () =>
   new GoogleSpreadsheet(sheet.spreadsheet_id);
