@@ -19,14 +19,14 @@ function createServiceAccountAuth(spreadsheet: GoogleSpreadsheet) {
       spreadsheet
         .useServiceAccountAuth(SERVICE_ACCOUNT_CREDS)
         .then(() => spreadsheet),
-    (e) => `Could not connect to spreadsheets. Error: ${e}`
+    (e) => `Could not connect to spreadsheets. ${e}`
   );
 }
 
 function loadSpreadsheetInfo(spreadsheet: GoogleSpreadsheet) {
   return TE.tryCatch(
     () => spreadsheet.loadInfo().then(() => spreadsheet),
-    (e) => `Could not load spreadsheet info. Error: ${e}`
+    (e) => `Could not load spreadsheet info. ${e}`
   );
 }
 
