@@ -3,11 +3,14 @@ import {
   GoogleSpreadsheetWorksheet,
   GoogleSpreadsheetRow,
 } from "google-spreadsheet";
+import * as D from "io-ts/lib/Decoder";
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as ROA from "fp-ts/lib/ReadonlyArray";
 
-import { SERVICE_ACCOUNT_CREDS, SPREADSHEET_ID, SHEET_ID } from "./config";
+import { SERVICE_ACCOUNT_CREDS, SPREADSHEET_ID } from "./config";
+
+type SheetName = "staged_plan" | "stages" | "income" | "overview";
 
 export function makeNewSpreadsheetInstance() {
   return new GoogleSpreadsheet(SPREADSHEET_ID);
@@ -30,13 +33,15 @@ function loadSpreadsheetInfo(spreadsheet: GoogleSpreadsheet) {
   );
 }
 
-export function getAccountsSheet(doc: GoogleSpreadsheet) {
-  return pipe(
-    doc,
-    createServiceAccountAuth,
-    TE.chain(loadSpreadsheetInfo),
-    TE.map((s) => s.sheetsById[SHEET_ID])
-  );
+export function getSheetByName(name: SheetName) {
+  return function getSheetFromDocByName(doc: GoogleSpreadsheet) {
+    return pipe(
+      doc,
+      createServiceAccountAuth,
+      TE.chain(loadSpreadsheetInfo),
+      TE.map((s) => s.sheetsByTitle[name])
+    );
+  };
 }
 
 export function loadWorksheetRows(ws: GoogleSpreadsheetWorksheet) {
@@ -51,6 +56,16 @@ export function getRawRowsData(rs: Array<GoogleSpreadsheetRow>) {
     rs,
     ROA.map((r) => r._rawData)
   );
+}
+
+export function getRowsData<I, A>(decoder: D.Decoder<I, A>) {
+  return function decodeRawRowsData(rs: Array<GoogleSpreadsheetRow>) {
+    return pipe(
+      rs,
+      ROA.map((r) => r._rawData.map((c: string) => c.trim())),
+      ROA.partitionMap(decoder.decode)
+    );
+  };
 }
 
 export function loadCellsInRange(row: string, column: string) {
